@@ -24,8 +24,15 @@
   (define tok (car tokens))
   (define srcloc (token->srcloc tok))
   (define name (token-value tok))
-  (define-values (scenarios rest) (parse-scenarios (cdr tokens)))
-  (values (gherkin-feature srcloc name scenarios) rest))
+  (define-values (background after-bg) (parse-background (cdr tokens)))
+  (define-values (scenarios rest) (parse-scenarios after-bg))
+  (values (gherkin-feature srcloc name background scenarios) rest))
+
+(define (parse-background tokens)
+  (cond
+    [(and (pair? tokens) (eq? (token-type (car tokens)) 'background))
+     (parse-steps (cdr tokens))]
+    [else (values '() tokens)]))
 
 (define (parse-scenarios tokens)
   (let loop ([toks tokens] [scenarios '()])

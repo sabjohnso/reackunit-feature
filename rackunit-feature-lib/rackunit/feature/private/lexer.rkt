@@ -5,13 +5,14 @@
 (struct token (type value line source) #:transparent)
 
 (define keyword-patterns
-  `((feature   ,#px"^\\s*Feature:\\s*(.*?)\\s*$")
-    (scenario  ,#px"^\\s*Scenario:\\s*(.*?)\\s*$")
-    (given     ,#px"^\\s*Given\\s+(.*?)\\s*$")
-    (when      ,#px"^\\s*When\\s+(.*?)\\s*$")
-    (then      ,#px"^\\s*Then\\s+(.*?)\\s*$")
-    (and       ,#px"^\\s*And\\s+(.*?)\\s*$")
-    (but       ,#px"^\\s*But\\s+(.*?)\\s*$")))
+  `((feature    ,#px"^\\s*Feature:\\s*(.*?)\\s*$")
+    (background ,#px"^\\s*Background:\\s*(.*?)\\s*$")
+    (scenario   ,#px"^\\s*Scenario:\\s*(.*?)\\s*$")
+    (given      ,#px"^\\s*Given\\s+(.*?)\\s*$")
+    (when       ,#px"^\\s*When\\s+(.*?)\\s*$")
+    (then       ,#px"^\\s*Then\\s+(.*?)\\s*$")
+    (and        ,#px"^\\s*And\\s+(.*?)\\s*$")
+    (but        ,#px"^\\s*But\\s+(.*?)\\s*$")))
 
 (define (blank-or-comment? line)
   (or (regexp-match? #px"^\\s*$" line)

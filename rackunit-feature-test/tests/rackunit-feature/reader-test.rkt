@@ -22,6 +22,9 @@
      (check-equal? (length scenarios) 1)
      (check-equal? (gherkin-scenario-name (car scenarios)) "Addition"))
 
+   (test-case "feature without Background has empty background list"
+     (check-equal? (gherkin-feature-background (car features)) '()))
+
    (test-case "steps are parsed with correct types"
      (define steps (gherkin-scenario-steps
                     (car (gherkin-feature-scenarios (car features)))))

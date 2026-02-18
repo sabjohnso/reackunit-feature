@@ -32,7 +32,7 @@
      (define saw-setup (box #f))
      (run-features
       (list (gherkin-feature
-             #f "F"
+             #f "F" '()
              (list (gherkin-scenario
                     #f "S"
                     (list (gherkin-step #f 'given "a calculator"))))))

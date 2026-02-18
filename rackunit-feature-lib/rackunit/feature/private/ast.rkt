@@ -6,5 +6,5 @@
 
 (struct gherkin-step     (srcloc type text)     #:prefab)
 (struct gherkin-scenario (srcloc name steps)     #:prefab)
-(struct gherkin-feature  (srcloc name scenarios) #:prefab)
+(struct gherkin-feature  (srcloc name background scenarios) #:prefab)
 (struct gherkin-document (srcloc features)       #:prefab)

@@ -20,7 +20,7 @@
 
 (define sample-features
   (list (gherkin-feature
-         #f "Calculator"
+         #f "Calculator" '()
          (list (gherkin-scenario
                 #f "Addition"
                 (list (gherkin-step #f 'given "a calculator")
@@ -67,7 +67,7 @@
      (define saw-key (box #f))
      (run-features
       (list (gherkin-feature
-             #f "F"
+             #f "F" '()
              (list (gherkin-scenario
                     #f "S"
                     (list (gherkin-step #f 'given "a calculator"))))))
@@ -78,10 +78,75 @@
       #:before-all (lambda (ctx) (hash-set ctx 'setup 'done)))
      (check-equal? (unbox saw-key) 'done))
 
+   (test-case "background steps fire before scenario steps"
+     (define step-log (box '()))
+     (define bg-features
+       (list (gherkin-feature
+              #f "F"
+              (list (gherkin-step #f 'given "a calculator"))
+              (list (gherkin-scenario
+                     #f "S"
+                     (list (gherkin-step #f 'when "I add 2 and 3")
+                           (gherkin-step #f 'then "the result is 5")))))))
+     (run-features bg-features
+       #:steps (list (step-def 'given "a calculator"
+                               (lambda (ctx)
+                                 (set-box! step-log (cons 'bg-given (unbox step-log)))
+                                 (hash-set ctx 'calc 'ready)))
+                     (step-def 'when "I add {a} and {b}"
+                               (lambda (ctx a b)
+                                 (set-box! step-log (cons 'when-add (unbox step-log)))
+                                 (hash-set ctx 'result
+                                           (+ (string->number a) (string->number b)))))
+                     (step-def 'then "the result is {n}"
+                               (lambda (ctx n)
+                                 (set-box! step-log (cons 'then-result (unbox step-log)))
+                                 (check-equal? (hash-ref ctx 'result) (string->number n))
+                                 ctx))))
+     (check-equal? (reverse (unbox step-log))
+                   '(bg-given when-add then-result)))
+
+   (test-case "background runs for every scenario"
+     (define bg-count (box 0))
+     (define bg-features
+       (list (gherkin-feature
+              #f "F"
+              (list (gherkin-step #f 'given "setup"))
+              (list (gherkin-scenario #f "S1"
+                     (list (gherkin-step #f 'given "do something")))
+                    (gherkin-scenario #f "S2"
+                     (list (gherkin-step #f 'given "do something")))))))
+     (run-features bg-features
+       #:steps (list (step-def 'given "setup"
+                               (lambda (ctx)
+                                 (set-box! bg-count (add1 (unbox bg-count)))
+                                 ctx))
+                     (step-def 'given "do something"
+                               (lambda (ctx) ctx))))
+     (check-equal? (unbox bg-count) 2))
+
+   (test-case "hooks fire for background steps"
+     (define step-hook-log (box '()))
+     (define bg-features
+       (list (gherkin-feature
+              #f "F"
+              (list (gherkin-step #f 'given "setup"))
+              (list (gherkin-scenario #f "S"
+                     (list (gherkin-step #f 'when "act")))))))
+     (run-features bg-features
+       #:steps (list (step-def 'given "setup" (lambda (ctx) ctx))
+                     (step-def 'when "act" (lambda (ctx) ctx)))
+       #:before-step (lambda (ctx step)
+                       (set-box! step-hook-log
+                                 (cons (gherkin-step-text step)
+                                       (unbox step-hook-log)))
+                       ctx))
+     (check-equal? (reverse (unbox step-hook-log)) '("setup" "act")))
+
    (test-case "scenarios are isolated from each other"
      (define multi-scenario-features
        (list (gherkin-feature
-              #f "F"
+              #f "F" '()
               (list (gherkin-scenario
                      #f "S1"
                      (list (gherkin-step #f 'given "a calculator")

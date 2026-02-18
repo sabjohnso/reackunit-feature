@@ -83,6 +83,57 @@
       (check-equal? (gherkin-scenario-name (second scenarios)) "Subtract")))
 
    (test-suite
+    "background section"
+    (test-case "feature with background stores steps in background field"
+      (define doc (parse-string
+                   (string-append "Feature: Calculator\n"
+                                  "  Background:\n"
+                                  "    Given a calculator\n"
+                                  "    And the display is cleared\n"
+                                  "  Scenario: Add\n"
+                                  "    When I add 2 and 3\n"
+                                  "    Then the result is 5\n")))
+      (define f (car (gherkin-document-features doc)))
+      (check-equal? (length (gherkin-feature-background f)) 2)
+      (check-equal? (gherkin-step-type (first (gherkin-feature-background f))) 'given)
+      (check-equal? (gherkin-step-text (first (gherkin-feature-background f))) "a calculator")
+      (check-equal? (gherkin-step-type (second (gherkin-feature-background f))) 'given)
+      (check-equal? (gherkin-step-text (second (gherkin-feature-background f))) "the display is cleared"))
+
+    (test-case "feature without background has empty background list"
+      (define doc (parse-string
+                   (string-append "Feature: F\n"
+                                  "  Scenario: S\n"
+                                  "    Given x\n")))
+      (define f (car (gherkin-document-features doc)))
+      (check-equal? (gherkin-feature-background f) '()))
+
+    (test-case "background steps are not duplicated into scenario steps"
+      (define doc (parse-string
+                   (string-append "Feature: F\n"
+                                  "  Background:\n"
+                                  "    Given shared setup\n"
+                                  "  Scenario: S\n"
+                                  "    When I do something\n")))
+      (define f (car (gherkin-document-features doc)))
+      (define sc-steps (gherkin-scenario-steps (car (gherkin-feature-scenarios f))))
+      (check-equal? (length sc-steps) 1)
+      (check-equal? (gherkin-step-text (car sc-steps)) "I do something"))
+
+    (test-case "And/But resolution works in background steps"
+      (define doc (parse-string
+                   (string-append "Feature: F\n"
+                                  "  Background:\n"
+                                  "    Given a calculator\n"
+                                  "    And the display is cleared\n"
+                                  "    But not the memory\n"
+                                  "  Scenario: S\n"
+                                  "    When I press add\n")))
+      (define bg (gherkin-feature-background
+                  (car (gherkin-document-features doc))))
+      (check-equal? (map gherkin-step-type bg) '(given given given))))
+
+   (test-suite
     "source locations"
     (test-case "feature carries source location"
       (define doc (parse-string "Feature: F\n  Scenario: S\n    Given x\n"))

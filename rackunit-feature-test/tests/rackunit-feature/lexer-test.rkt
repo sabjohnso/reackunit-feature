@@ -45,7 +45,18 @@
     (test-case "But keyword"
       (define tokens (tokenize-string "    But not this"))
       (check-equal? (token-type (car tokens)) 'but)
-      (check-equal? (token-value (car tokens)) "not this")))
+      (check-equal? (token-value (car tokens)) "not this"))
+
+    (test-case "Background keyword"
+      (define tokens (tokenize-string "  Background:"))
+      (check-equal? (length tokens) 1)
+      (check-equal? (token-type (car tokens)) 'background)
+      (check-equal? (token-value (car tokens)) ""))
+
+    (test-case "Background keyword with trailing text"
+      (define tokens (tokenize-string "  Background: setup"))
+      (check-equal? (token-type (car tokens)) 'background)
+      (check-equal? (token-value (car tokens)) "setup")))
 
    (test-suite
     "blanks and comments"

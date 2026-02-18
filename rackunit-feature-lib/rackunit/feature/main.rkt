@@ -57,8 +57,11 @@
           (format "Scenario: ~a" (gherkin-scenario-name sc))
           (lambda ()
             (define sc-ctx (before-scenario feat-ctx sc))
+            (define all-steps
+              (append (gherkin-feature-background feat)
+                      (gherkin-scenario-steps sc)))
             (define final-ctx
-              (for/fold ([ctx sc-ctx]) ([step (in-list (gherkin-scenario-steps sc))])
+              (for/fold ([ctx sc-ctx]) ([step (in-list all-steps)])
                 (define pre-ctx (before-step ctx step))
                 (define post-ctx
                   (run-step steps

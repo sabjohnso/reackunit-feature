@@ -38,17 +38,23 @@
 
    (test-suite
     "gherkin-feature"
-    (test-case "constructs with srcloc, name, and scenarios"
+    (test-case "constructs with srcloc, name, background, and scenarios"
+      (define bg (list (gherkin-step #f 'given "a calculator")))
       (define sc (gherkin-scenario #f "S" '()))
-      (define f (gherkin-feature '(test 1 0 1 30) "Calculator" (list sc)))
+      (define f (gherkin-feature '(test 1 0 1 30) "Calculator" bg (list sc)))
       (check-equal? (gherkin-feature-srcloc f) '(test 1 0 1 30))
       (check-equal? (gherkin-feature-name f) "Calculator")
-      (check-equal? (gherkin-feature-scenarios f) (list sc))))
+      (check-equal? (gherkin-feature-background f) bg)
+      (check-equal? (gherkin-feature-scenarios f) (list sc)))
+
+    (test-case "empty background when no Background section"
+      (define f (gherkin-feature #f "F" '() '()))
+      (check-equal? (gherkin-feature-background f) '())))
 
    (test-suite
     "gherkin-document"
     (test-case "constructs with srcloc and features (no step-files)"
-      (define f (gherkin-feature #f "Calculator" '()))
+      (define f (gherkin-feature #f "Calculator" '() '()))
       (define doc (gherkin-document '(test 1 0 1 0) (list f)))
       (check-equal? (gherkin-document-srcloc doc) '(test 1 0 1 0))
       (check-equal? (gherkin-document-features doc) (list f)))
@@ -58,7 +64,7 @@
         (gherkin-document
          #f
          (list (gherkin-feature
-                #f "F"
+                #f "F" '()
                 (list (gherkin-scenario
                        #f "S"
                        (list (gherkin-step #f 'given "x"))))))))
@@ -66,7 +72,7 @@
         (gherkin-document
          #f
          (list (gherkin-feature
-                #f "F"
+                #f "F" '()
                 (list (gherkin-scenario
                        #f "S"
                        (list (gherkin-step #f 'given "x"))))))))
