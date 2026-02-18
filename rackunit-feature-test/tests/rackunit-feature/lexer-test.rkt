@@ -1,9 +1,9 @@
 #lang racket/base
 (require rackunit rackunit/text-ui racket/list)
-(require rackunit-feature/private/lexer)
+(require rackunit/feature/private/lexer)
 
 (define (tokenize-string str)
-  (tokenize (open-input-string str) "test.feature.rkt"))
+  (tokenize (open-input-string str) "test.feature"))
 
 (define lexer-tests
   (test-suite
@@ -48,21 +48,6 @@
       (check-equal? (token-value (car tokens)) "not this")))
 
    (test-suite
-    "Steps directive"
-    (test-case "Steps directive with quoted path"
-      (define tokens (tokenize-string "Steps: \"calculator-steps.rkt\""))
-      (check-equal? (token-type (car tokens)) 'steps)
-      (check-equal? (token-value (car tokens)) "calculator-steps.rkt"))
-
-    (test-case "multiple Steps directives"
-      (define tokens (tokenize-string
-                      (string-append "Steps: \"a.rkt\"\n"
-                                     "Steps: \"b.rkt\"\n")))
-      (check-equal? (length tokens) 2)
-      (check-equal? (token-value (first tokens)) "a.rkt")
-      (check-equal? (token-value (second tokens)) "b.rkt")))
-
-   (test-suite
     "blanks and comments"
     (test-case "blank lines are skipped"
       (define tokens (tokenize-string "\n\n  \n"))
@@ -85,21 +70,19 @@
 
     (test-case "tokens carry source name"
       (define tokens (tokenize-string "Feature: F"))
-      (check-equal? (token-source (car tokens)) "test.feature.rkt")))
+      (check-equal? (token-source (car tokens)) "test.feature")))
 
    (test-suite
     "multi-line document"
-    (test-case "full feature tokenizes correctly"
+    (test-case "full feature tokenizes correctly (no Steps directive)"
       (define tokens (tokenize-string
-                      (string-append "Steps: \"steps.rkt\"\n"
-                                     "\n"
-                                     "Feature: Calculator\n"
+                      (string-append "Feature: Calculator\n"
                                      "  Scenario: Addition\n"
                                      "    Given a calculator\n"
                                      "    When I add 2 and 3\n"
                                      "    Then the result is 5\n")))
-      (check-equal? (length tokens) 6)
+      (check-equal? (length tokens) 5)
       (check-equal? (map token-type tokens)
-                    '(steps feature scenario given when then))))))
+                    '(feature scenario given when then))))))
 
 (run-tests lexer-tests)

@@ -1,13 +1,11 @@
 #lang racket/base
-(require racket/string)
 (provide tokenize
          token token-type token-value token-line token-source)
 
 (struct token (type value line source) #:transparent)
 
 (define keyword-patterns
-  `((steps     ,#px"^\\s*Steps:\\s*\"([^\"]+)\"")
-    (feature   ,#px"^\\s*Feature:\\s*(.*?)\\s*$")
+  `((feature   ,#px"^\\s*Feature:\\s*(.*?)\\s*$")
     (scenario  ,#px"^\\s*Scenario:\\s*(.*?)\\s*$")
     (given     ,#px"^\\s*Given\\s+(.*?)\\s*$")
     (when      ,#px"^\\s*When\\s+(.*?)\\s*$")

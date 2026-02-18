@@ -1,8 +1,6 @@
 #lang racket/base
 (require rackunit rackunit/text-ui)
-
-;; Will fail until private/ast.rkt exists
-(require rackunit-feature/private/ast)
+(require rackunit/feature/private/ast)
 
 (define ast-tests
   (test-suite
@@ -49,19 +47,16 @@
 
    (test-suite
     "gherkin-document"
-    (test-case "constructs with srcloc, step-files, and features"
+    (test-case "constructs with srcloc and features (no step-files)"
       (define f (gherkin-feature #f "Calculator" '()))
-      (define doc (gherkin-document '(test 1 0 1 0)
-                                   '("steps.rkt")
-                                   (list f)))
+      (define doc (gherkin-document '(test 1 0 1 0) (list f)))
       (check-equal? (gherkin-document-srcloc doc) '(test 1 0 1 0))
-      (check-equal? (gherkin-document-step-files doc) '("steps.rkt"))
       (check-equal? (gherkin-document-features doc) (list f)))
 
     (test-case "equal? works for full document tree"
       (define doc1
         (gherkin-document
-         #f '("s.rkt")
+         #f
          (list (gherkin-feature
                 #f "F"
                 (list (gherkin-scenario
@@ -69,7 +64,7 @@
                        (list (gherkin-step #f 'given "x"))))))))
       (define doc2
         (gherkin-document
-         #f '("s.rkt")
+         #f
          (list (gherkin-feature
                 #f "F"
                 (list (gherkin-scenario

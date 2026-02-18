@@ -1,6 +1,6 @@
 #lang racket/base
 (require rackunit rackunit/text-ui racket/list)
-(require rackunit-feature/runtime)
+(require rackunit/feature/runtime)
 
 (define runtime-tests
   (test-suite

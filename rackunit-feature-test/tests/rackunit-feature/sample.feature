@@ -1,5 +1,4 @@
-#lang rackunit-feature
-Steps: "calculator-steps.rkt"
+#lang feature
 
 Feature: Calculator
   Scenario: Addition

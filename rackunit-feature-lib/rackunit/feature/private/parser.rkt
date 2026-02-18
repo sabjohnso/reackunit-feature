@@ -3,21 +3,13 @@
 (provide parse)
 
 ;; parse : (listof token) -> gherkin-document
-;; Recursive descent parser over a flat token list.
 (define (parse tokens)
-  (define-values (step-files rest) (parse-step-directives tokens))
-  (define features (parse-features rest))
   (define srcloc (if (pair? tokens) (token->srcloc (car tokens)) #f))
-  (gherkin-document srcloc step-files features))
+  (define features (parse-features tokens))
+  (gherkin-document srcloc features))
 
 (define (token->srcloc tok)
   (list (token-source tok) (token-line tok)))
-
-(define (parse-step-directives tokens)
-  (let loop ([toks tokens] [files '()])
-    (if (and (pair? toks) (eq? (token-type (car toks)) 'steps))
-        (loop (cdr toks) (append files (list (token-value (car toks)))))
-        (values files toks))))
 
 (define (parse-features tokens)
   (let loop ([toks tokens] [features '()])

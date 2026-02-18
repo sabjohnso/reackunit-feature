@@ -1,7 +1,6 @@
 #lang racket/base
 (require rackunit rackunit/text-ui racket/list)
-(require rackunit-feature/runtime)
-(require rackunit-feature/steps)
+(require rackunit/feature/main)
 
 (define-steps my-steps
   (given "a calculator"
@@ -16,9 +15,9 @@
 
 (define steps-tests
   (test-suite
-   "Step definition API"
+   "define-steps"
 
-   (test-case "define-steps produces a list of step-defs"
+   (test-case "produces a list of step-defs"
      (check-pred list? my-steps)
      (check-equal? (length my-steps) 3))
 
@@ -41,7 +40,11 @@
      (define ctx3 (run-step my-steps 'then "the result is 5" ctx2))
      (check-equal? (hash-ref ctx3 'result) 5))
 
-   (test-case "define-steps also binds feature-steps"
-     (check-equal? feature-steps my-steps))))
+   (test-case "given/when/then don't shadow racket/base when"
+     ;; The when keyword inside define-steps is matched by datum,
+     ;; not by binding. racket/base's when macro should still work.
+     (define x 0)
+     (when #t (set! x 1))
+     (check-equal? x 1))))
 
 (run-tests steps-tests)

@@ -1,8 +1,8 @@
 #lang racket/base
 (require rackunit rackunit/text-ui racket/list)
-(require rackunit-feature/private/ast)
-(require rackunit-feature/private/lexer)
-(require rackunit-feature/private/parser)
+(require rackunit/feature/private/ast)
+(require rackunit/feature/private/lexer)
+(require rackunit/feature/private/parser)
 
 (define (parse-string str)
   (parse (tokenize (open-input-string str) "test")))
@@ -19,7 +19,6 @@
                                   "  Scenario: Add\n"
                                   "    Given a calculator\n")))
       (check-pred gherkin-document? doc)
-      (check-equal? (gherkin-document-step-files doc) '())
       (define features (gherkin-document-features doc))
       (check-equal? (length features) 1)
       (check-equal? (gherkin-feature-name (car features)) "Calculator")
@@ -84,29 +83,6 @@
       (check-equal? (gherkin-scenario-name (second scenarios)) "Subtract")))
 
    (test-suite
-    "Steps directive"
-    (test-case "Steps directive is captured"
-      (define doc (parse-string
-                   (string-append "Steps: \"calc-steps.rkt\"\n"
-                                  "\n"
-                                  "Feature: Calculator\n"
-                                  "  Scenario: Add\n"
-                                  "    Given a calculator\n")))
-      (check-equal? (gherkin-document-step-files doc)
-                    '("calc-steps.rkt")))
-
-    (test-case "multiple step files"
-      (define doc (parse-string
-                   (string-append "Steps: \"a.rkt\"\n"
-                                  "Steps: \"b.rkt\"\n"
-                                  "\n"
-                                  "Feature: F\n"
-                                  "  Scenario: S\n"
-                                  "    Given x\n")))
-      (check-equal? (gherkin-document-step-files doc)
-                    '("a.rkt" "b.rkt"))))
-
-   (test-suite
     "source locations"
     (test-case "feature carries source location"
       (define doc (parse-string "Feature: F\n  Scenario: S\n    Given x\n"))
@@ -119,9 +95,7 @@
     "full feature"
     (test-case "complete feature with given/when/then"
       (define doc (parse-string
-                   (string-append "Steps: \"steps.rkt\"\n"
-                                  "\n"
-                                  "Feature: Calculator\n"
+                   (string-append "Feature: Calculator\n"
                                   "  Scenario: Addition\n"
                                   "    Given a calculator\n"
                                   "    When I add 2 and 3\n"
