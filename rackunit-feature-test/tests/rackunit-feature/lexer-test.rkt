@@ -76,8 +76,11 @@
                                      "  Scenario: S\n"
                                      "    Given x\n")))
       (check-equal? (token-line (first tokens)) 1)
+      (check-equal? (token-column (first tokens)) 0)
       (check-equal? (token-line (second tokens)) 2)
-      (check-equal? (token-line (third tokens)) 3))
+      (check-equal? (token-column (second tokens)) 2)
+      (check-equal? (token-line (third tokens)) 3)
+      (check-equal? (token-column (third tokens)) 4))
 
     (test-case "tokens carry source name"
       (define tokens (tokenize-string "Feature: F"))

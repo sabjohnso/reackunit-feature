@@ -1,8 +1,15 @@
 #lang racket/base
-(require rackunit rackunit/text-ui racket/list)
+(require rackunit rackunit/text-ui rackunit/log racket/list racket/port)
 (require rackunit/feature/private/ast)
 (require rackunit/feature/runtime)
 (require rackunit/feature/main)
+
+;; Capture the module-level (top-level) check parameters.
+;; Inside an outer run-tests, current-check-handler is re-parameterized,
+;; which masks the bug where default-check-around swallows exceptions.
+;; Resetting to these values inside tests simulates top-level behavior.
+(define initial-check-handler (current-check-handler))
+(define initial-check-around (current-check-around))
 
 (define test-steps
   (list (step-def 'given "a calculator"
@@ -168,6 +175,54 @@
                                                           (string->number b)))))))
      ;; S2 should NOT see S1's 'result key
      (check-false (unbox s2-has-result)))
+
+   (test-case "failing check-equal? in step handler counts as failure"
+     (define failures
+       (parameterize ([test-log-enabled? #f]
+                      [current-check-handler initial-check-handler]
+                      [current-check-around initial-check-around]
+                      [current-output-port (open-output-string)]
+                      [current-error-port (open-output-string)])
+         (run-features
+          (list (gherkin-feature
+                 #f "F" '() '()
+                 (list (gherkin-scenario
+                        #f "S" '()
+                        (list (gherkin-step #f 'then "should fail" #f))))))
+          #:steps (list (step-def 'then "should fail"
+                                  (lambda (ctx)
+                                    (check-equal? 1 2)
+                                    ctx))))))
+     (check-true (> failures 0)
+                 "a failing check-equal? must be counted as a test failure"))
+
+   (test-case "failure output includes feature-file and step context"
+     (define err-output (open-output-string))
+     (parameterize ([test-log-enabled? #f]
+                    [current-check-handler initial-check-handler]
+                    [current-check-around initial-check-around]
+                    [current-output-port (open-output-string)]
+                    [current-error-port err-output])
+       (run-features
+        (list (gherkin-feature
+               #f "F" '() '()
+               (list (gherkin-scenario
+                      #f "S" '()
+                      (list (gherkin-step '("calc.feature" 5 4)
+                                          'then "should fail" #f))))))
+        #:steps (list (step-def 'then "should fail"
+                                (lambda (ctx)
+                                  (check-equal? 1 2)
+                                  ctx)))))
+     (define output-str (get-output-string err-output))
+     (check-true (regexp-match? #rx"feature-file" output-str)
+                 "output should contain feature-file info")
+     (check-true (regexp-match? #rx"calc\\.feature:5:4" output-str)
+                 "output should contain source file, line, and column")
+     (check-true (regexp-match? #rx"step" output-str)
+                 "output should contain step info")
+     (check-true (regexp-match? #rx"then should fail" output-str)
+                 "output should contain step text"))
 
    (test-case "data table argument is threaded to step handler"
      (define received-table (box #f))

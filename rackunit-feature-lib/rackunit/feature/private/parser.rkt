@@ -9,7 +9,7 @@
   (gherkin-document srcloc features))
 
 (define (token->srcloc tok)
-  (list (token-source tok) (token-line tok)))
+  (list (token-source tok) (token-line tok) (token-column tok)))
 
 ;; consume-tags : (listof token) -> (values (listof string) (listof token))
 ;; Consumes consecutive 'tags tokens, merging into a flat list.

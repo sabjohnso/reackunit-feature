@@ -1,9 +1,9 @@
 #lang racket/base
 (require racket/string)
 (provide tokenize
-         token token-type token-value token-line token-source)
+         token token-type token-value token-line token-column token-source)
 
-(struct token (type value line source) #:transparent)
+(struct token (type value line column source) #:transparent)
 
 (define keyword-patterns
   `((feature          ,#px"^\\s*Feature:\\s*(.*?)\\s*$")
@@ -44,12 +44,13 @@
        (regexp-match* #px"@[\\w-]+" (string->bytes/utf-8 line))))
 
 (define (tokenize-line line line-number source)
+  (define col (line-indent line))
   (cond
     [(blank-or-comment? line) #f]
     [(table-row-line? line)
-     (token 'table-row (parse-table-row line) line-number source)]
+     (token 'table-row (parse-table-row line) line-number col source)]
     [(tags-line? line)
-     (token 'tags (parse-tags line) line-number source)]
+     (token 'tags (parse-tags line) line-number col source)]
     [else
      (let loop ([patterns keyword-patterns])
        (cond
@@ -60,7 +61,7 @@
           (define pat (car patterns))
           (define m (regexp-match (cadr pat) line))
           (if m
-              (token (car pat) (cadr m) line-number source)
+              (token (car pat) (cadr m) line-number col source)
               (loop (cdr patterns)))]))]))
 
 (define (doc-string-delimiter? line)
@@ -100,7 +101,7 @@
                   (reverse doc-lines))
              "\n"))
           (loop (add1 line-number)
-                (cons (token 'doc-string content in-doc-string source)
+                (cons (token 'doc-string content in-doc-string doc-indent source)
                       tokens)
                 #f 0 '())]
          [else
