@@ -14,7 +14,7 @@ A complete BDD workflow requires three files:
 
 @bold{1. A feature file} (@filepath{calculator.feature}):
 
-@verbatim|{
+@codeblock[#:keep-lang-line? #t]{
 #lang feature
 
 Feature: Calculator
@@ -22,7 +22,7 @@ Feature: Calculator
     Given a calculator
     When I add 2 and 3
     Then the result is 5
-}|
+}
 
 @bold{2. Step definitions} (@filepath{calculator-steps.rkt}):
 
@@ -64,7 +64,7 @@ Run with @exec{raco test test-calculator.rkt}. The
 Feature files use @tt{#lang feature} and follow a
 subset of the Gherkin specification:
 
-@verbatim|{
+@codeblock[#:keep-lang-line? #t]|{
 #lang feature
 
 @smoke
@@ -277,7 +277,7 @@ A @tt{Scenario Outline} is a template expanded at parse time into
 one concrete scenario per row in the @tt{Examples:} table. Use
 angle-bracket placeholders (@tt{<name>}) in steps:
 
-@verbatim|{
+@codeblock[#:keep-lang-line? #t]{
 #lang feature
 
 Feature: Arithmetic
@@ -289,7 +289,7 @@ Feature: Arithmetic
       | a | b | result |
       | 1 | 2 | 3      |
       | 4 | 5 | 9      |
-}|
+}
 
 This produces two scenarios: @tt{Operations (a=1, b=2, result=3)} and
 @tt{Operations (a=4, b=5, result=9)}. The step text has the

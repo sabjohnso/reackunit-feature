@@ -2,7 +2,14 @@
 (require rackunit/feature/private/lexer
          rackunit/feature/private/parser
          rackunit/feature/private/ast)
-(provide read-syntax)
+(provide read-syntax get-info)
+
+(define (get-info in mod line col pos)
+  (lambda (key default)
+    (case key
+      [(color-lexer)
+       (dynamic-require 'feature/lang/color-lexer 'feature-color-lexer)]
+      [else default])))
 
 (define (read-syntax src port)
   (define source-name (if (path? src) (path->string src) "feature"))

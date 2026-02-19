@@ -18,8 +18,8 @@
     (but              ,#px"^\\s*But\\s+(.*?)\\s*$")))
 
 (define (blank-or-comment? line)
-  (or (regexp-match? #px"^\\s*$" line)
-      (regexp-match? #px"^\\s*#" line)))
+  (or (regexp-match? #px"^[\\s\xA0]*$" line)
+      (regexp-match? #px"^[\\s\xA0]*#" line)))
 
 (define (table-row-line? line)
   (regexp-match? #px"^\\s*\\|" line))
