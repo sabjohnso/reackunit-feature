@@ -32,10 +32,10 @@
      (define saw-setup (box #f))
      (run-features
       (list (gherkin-feature
-             #f "F" '()
+             #f "F" '() '()
              (list (gherkin-scenario
-                    #f "S"
-                    (list (gherkin-step #f 'given "a calculator"))))))
+                    #f "S" '()
+                    (list (gherkin-step #f 'given "a calculator" #f))))))
       #:steps (list (step-def 'given "a calculator"
                               (lambda (ctx)
                                 (set-box! saw-setup (hash-ref ctx 'setup #f))

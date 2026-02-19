@@ -17,9 +17,10 @@
   (define joined (string-join escaped-parts "(.+?)"))
   (pregexp (string-append "^" joined "$")))
 
-;; run-step : (listof step-def) symbol string hash -> hash
+;; run-step : (listof step-def) symbol string hash [#:argument any/c] -> hash
 ;; Finds the first step-def matching type+text, runs it, returns new context.
-(define (run-step step-defs type text ctx)
+;; When argument is non-#f it is appended after captures.
+(define (run-step step-defs type text ctx #:argument [argument #f])
   (let loop ([defs step-defs])
     (cond
       [(null? defs)
@@ -29,6 +30,9 @@
        (if (eq? (step-def-type sd) type)
            (let ([m (regexp-match (compile-step-pattern (step-def-pattern sd)) text)])
              (if m
-                 (apply (step-def-handler sd) ctx (cdr m))
+                 (let ([captures (cdr m)])
+                   (if argument
+                       (apply (step-def-handler sd) ctx (append captures (list argument)))
+                       (apply (step-def-handler sd) ctx captures)))
                  (loop (cdr defs))))
            (loop (cdr defs)))])))

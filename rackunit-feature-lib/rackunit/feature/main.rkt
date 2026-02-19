@@ -67,7 +67,8 @@
                   (run-step steps
                             (gherkin-step-type step)
                             (gherkin-step-text step)
-                            pre-ctx))
+                            pre-ctx
+                            #:argument (gherkin-step-argument step)))
                 (after-step post-ctx step)))
             (after-scenario final-ctx sc)
             (void)))))))

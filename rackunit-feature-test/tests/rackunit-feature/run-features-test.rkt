@@ -20,12 +20,12 @@
 
 (define sample-features
   (list (gherkin-feature
-         #f "Calculator" '()
+         #f "Calculator" '() '()
          (list (gherkin-scenario
-                #f "Addition"
-                (list (gherkin-step #f 'given "a calculator")
-                      (gherkin-step #f 'when "I add 2 and 3")
-                      (gherkin-step #f 'then "the result is 5")))))))
+                #f "Addition" '()
+                (list (gherkin-step #f 'given "a calculator" #f)
+                      (gherkin-step #f 'when "I add 2 and 3" #f)
+                      (gherkin-step #f 'then "the result is 5" #f)))))))
 
 (define run-features-tests
   (test-suite
@@ -67,10 +67,10 @@
      (define saw-key (box #f))
      (run-features
       (list (gherkin-feature
-             #f "F" '()
+             #f "F" '() '()
              (list (gherkin-scenario
-                    #f "S"
-                    (list (gherkin-step #f 'given "a calculator"))))))
+                    #f "S" '()
+                    (list (gherkin-step #f 'given "a calculator" #f))))))
       #:steps (list (step-def 'given "a calculator"
                               (lambda (ctx)
                                 (set-box! saw-key (hash-ref ctx 'setup #f))
@@ -82,12 +82,12 @@
      (define step-log (box '()))
      (define bg-features
        (list (gherkin-feature
-              #f "F"
-              (list (gherkin-step #f 'given "a calculator"))
+              #f "F" '()
+              (list (gherkin-step #f 'given "a calculator" #f))
               (list (gherkin-scenario
-                     #f "S"
-                     (list (gherkin-step #f 'when "I add 2 and 3")
-                           (gherkin-step #f 'then "the result is 5")))))))
+                     #f "S" '()
+                     (list (gherkin-step #f 'when "I add 2 and 3" #f)
+                           (gherkin-step #f 'then "the result is 5" #f)))))))
      (run-features bg-features
        #:steps (list (step-def 'given "a calculator"
                                (lambda (ctx)
@@ -110,12 +110,12 @@
      (define bg-count (box 0))
      (define bg-features
        (list (gherkin-feature
-              #f "F"
-              (list (gherkin-step #f 'given "setup"))
-              (list (gherkin-scenario #f "S1"
-                     (list (gherkin-step #f 'given "do something")))
-                    (gherkin-scenario #f "S2"
-                     (list (gherkin-step #f 'given "do something")))))))
+              #f "F" '()
+              (list (gherkin-step #f 'given "setup" #f))
+              (list (gherkin-scenario #f "S1" '()
+                     (list (gherkin-step #f 'given "do something" #f)))
+                    (gherkin-scenario #f "S2" '()
+                     (list (gherkin-step #f 'given "do something" #f)))))))
      (run-features bg-features
        #:steps (list (step-def 'given "setup"
                                (lambda (ctx)
@@ -129,10 +129,10 @@
      (define step-hook-log (box '()))
      (define bg-features
        (list (gherkin-feature
-              #f "F"
-              (list (gherkin-step #f 'given "setup"))
-              (list (gherkin-scenario #f "S"
-                     (list (gherkin-step #f 'when "act")))))))
+              #f "F" '()
+              (list (gherkin-step #f 'given "setup" #f))
+              (list (gherkin-scenario #f "S" '()
+                     (list (gherkin-step #f 'when "act" #f)))))))
      (run-features bg-features
        #:steps (list (step-def 'given "setup" (lambda (ctx) ctx))
                      (step-def 'when "act" (lambda (ctx) ctx)))
@@ -146,14 +146,14 @@
    (test-case "scenarios are isolated from each other"
      (define multi-scenario-features
        (list (gherkin-feature
-              #f "F" '()
+              #f "F" '() '()
               (list (gherkin-scenario
-                     #f "S1"
-                     (list (gherkin-step #f 'given "a calculator")
-                           (gherkin-step #f 'when "I add 2 and 3")))
+                     #f "S1" '()
+                     (list (gherkin-step #f 'given "a calculator" #f)
+                           (gherkin-step #f 'when "I add 2 and 3" #f)))
                     (gherkin-scenario
-                     #f "S2"
-                     (list (gherkin-step #f 'given "a calculator")))))))
+                     #f "S2" '()
+                     (list (gherkin-step #f 'given "a calculator" #f)))))))
      (define s2-has-result (box #f))
      (run-features multi-scenario-features
                    #:steps (list (step-def 'given "a calculator"
@@ -167,6 +167,23 @@
                                                        (+ (string->number a)
                                                           (string->number b)))))))
      ;; S2 should NOT see S1's 'result key
-     (check-false (unbox s2-has-result)))))
+     (check-false (unbox s2-has-result)))
+
+   (test-case "data table argument is threaded to step handler"
+     (define received-table (box #f))
+     (define table-features
+       (list (gherkin-feature
+              #f "F" '() '()
+              (list (gherkin-scenario
+                     #f "S" '()
+                     (list (gherkin-step #f 'given "a table"
+                                         '(("name" "age") ("Alice" "30")))))))))
+     (run-features table-features
+       #:steps (list (step-def 'given "a table"
+                               (lambda (ctx table)
+                                 (set-box! received-table table)
+                                 ctx))))
+     (check-equal? (unbox received-table)
+                   '(("name" "age") ("Alice" "30"))))))
 
 (run-tests run-features-tests)

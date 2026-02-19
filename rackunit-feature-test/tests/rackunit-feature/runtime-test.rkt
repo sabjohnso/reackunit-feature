@@ -84,6 +84,35 @@
               (step-def 'when "x"
                         (lambda (ctx) (hash-set ctx 'from 'when)))))
       (define ctx (run-step steps 'when "x" (hash)))
-      (check-equal? (hash-ref ctx 'from) 'when)))))
+      (check-equal? (hash-ref ctx 'from) 'when))
+
+    (test-case "argument is passed as last parameter when non-#f"
+      (define steps
+        (list (step-def 'given "a table"
+                        (lambda (ctx table)
+                          (hash-set ctx 'table table)))))
+      (define table '(("a" "b") ("1" "2")))
+      (define ctx (run-step steps 'given "a table" (hash)
+                            #:argument table))
+      (check-equal? (hash-ref ctx 'table) table))
+
+    (test-case "argument with captures: captures come before argument"
+      (define steps
+        (list (step-def 'when "I enter {x}"
+                        (lambda (ctx x table)
+                          (hash-set (hash-set ctx 'x x) 'table table)))))
+      (define table '(("a") ("1")))
+      (define ctx (run-step steps 'when "I enter foo" (hash)
+                            #:argument table))
+      (check-equal? (hash-ref ctx 'x) "foo")
+      (check-equal? (hash-ref ctx 'table) table))
+
+    (test-case "argument #f does not add extra parameter (backward compatible)"
+      (define steps
+        (list (step-def 'given "a calculator"
+                        (lambda (ctx) (hash-set ctx 'calc 'ready)))))
+      (define ctx (run-step steps 'given "a calculator" (hash)
+                            #:argument #f))
+      (check-equal? (hash-ref ctx 'calc) 'ready)))))
 
 (run-tests runtime-tests)
