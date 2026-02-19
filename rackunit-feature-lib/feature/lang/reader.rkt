@@ -9,6 +9,8 @@
     (case key
       [(color-lexer)
        (dynamic-require 'feature/lang/color-lexer 'feature-color-lexer)]
+      [(drracket:indentation)
+       (dynamic-require 'feature/lang/indentation 'feature-indent)]
       [else default])))
 
 (define (read-syntax src port)
