@@ -3,16 +3,12 @@
          (for-label racket/base
                     racket/contract
                     rackunit
-                    rackunit/feature
-                    rackunit/feature/runtime
-                    rackunit/feature/private/ast))
+                    rackunit/feature))
 
 (provide (for-label (all-from-out racket/base
                                   racket/contract
                                   rackunit
-                                  rackunit/feature
-                                  rackunit/feature/runtime
-                                  rackunit/feature/private/ast))
+                                  rackunit/feature))
          (all-from-out scribble/manual)
          reftech)
 

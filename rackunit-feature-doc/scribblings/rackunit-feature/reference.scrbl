@@ -4,6 +4,19 @@
 @title[#:tag "reference"]{API Reference}
 
 @; ===================================================================
+@section[#:tag "feature-lang"]{The @tt{feature} Language}
+
+@defmodulelang[feature]
+
+Feature files use @hash-lang[] @racketmodname[feature] and follow a
+subset of the @hyperlink["https://cucumber.io/docs/gherkin/"]{Gherkin}
+specification. The reader parses the file and provides a single binding:
+
+@racket[features] --- a @racket[(listof gherkin-feature?)] containing
+the parsed feature structures. Require the @filepath{.feature} file
+from a Racket module to access this binding.
+
+@; ===================================================================
 @section[#:tag "core-api"]{Core API}
 
 The @racketmodname[rackunit/feature] module provides the two primary
@@ -73,8 +86,6 @@ full execution order.}
 @; ===================================================================
 @section[#:tag "ast-types"]{AST Types}
 
-@defmodule[rackunit/feature/private/ast]
-
 These @tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{prefab} structures represent parsed Gherkin documents.
 They are produced by the @tt{#lang feature} reader and
 consumed by @racket[run-features].
@@ -119,8 +130,6 @@ The @racket[argument] is @racket[#f] when absent, a
 
 @; ===================================================================
 @section[#:tag "runtime"]{Runtime}
-
-@defmodule[rackunit/feature/runtime]
 
 Lower-level utilities for step definition matching and execution.
 
